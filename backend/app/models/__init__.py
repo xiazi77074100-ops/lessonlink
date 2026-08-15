@@ -4,6 +4,7 @@ from app.models.audit_log import AuditLog
 from app.models.child import Child
 from app.models.event import Event
 from app.models.invitation import Invitation
+from app.models.invitation_child import InvitationChild
 from app.models.notification import Notification
 from app.models.organization import Organization
 from app.models.parent import Parent
@@ -16,6 +17,7 @@ __all__ = [
     "Child",
     "Event",
     "Invitation",
+    "InvitationChild",
     "Notification",
     "Organization",
     "Parent",

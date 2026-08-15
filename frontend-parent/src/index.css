@@ -20,6 +20,9 @@ button:disabled { opacity: .45; cursor: default; }
 .complete-mark { display: grid; place-items: center; width: 64px; height: 64px; margin: 20px auto; border-radius: 50%; color: white; background: #2e7d32; font-size: 36px; font-weight: 700; }
 .onboarding { width: 100%; text-align: left; }
 .onboarding .complete-mark + h1, .onboarding .complete-mark ~ p { text-align: center; }
+.child-checklist { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; }
+.child-checklist li { padding: 10px 12px; border-radius: 10px; background: #eef3ee; font-weight: 700; color: #4b564d; }
+.child-checklist li.done { background: #e4f2e5; color: #25632a; }
 .answer { border-top: 1px solid #e1e7e2; padding-top: 16px; margin-top: 16px; }
 .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .buttons .active { color: white; background: #2e7d32; }

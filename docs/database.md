@@ -122,13 +122,27 @@ Index: `(organization_id, start_at)`, `(organization_id, status)`
 | organization_id | uuid FK | |
 | invitation_code | varchar(32) NOT NULL unique | URLセーフなランダム文字列 |
 | expires_at | timestamptz | null許容=無期限 |
-| max_uses | integer | null許容=無制限 |
-| used_count | integer NOT NULL DEFAULT 0 | |
+| max_uses | integer | null許容=無制限。家庭単位の招待（`invitation_children`が1件以上）ではデフォルト2（保護者利用上限）。組織単位の招待では対象家庭数の目安として運用 |
+| used_count | integer NOT NULL DEFAULT 0 | ログイン試行回数ではなく、この招待を使って新規参加した一意な保護者の数 |
 | status | varchar(20) NOT NULL DEFAULT 'ACTIVE' | ACTIVE / DISABLED / EXPIRED |
 | created_by_admin_id | uuid FK → admin_users | |
 | created_at / updated_at | timestamptz | |
 
-## 9. notifications
+## 9. invitation_children（多対多）
+
+家庭単位の招待が対象とする子供（同一家庭の兄弟姉妹）を表す。行が0件の招待は「組織単位の招待」として扱い、保護者は名簿から子供を選ぶ（Phase 13、`docs/ux-product-design.md` 2.3節）。
+
+| column | type | note |
+|---|---|---|
+| id | uuid PK | |
+| organization_id | uuid FK | |
+| invitation_id | uuid FK → invitations | |
+| child_id | uuid FK → children | |
+| created_at / updated_at | timestamptz | |
+
+Unique制約: `(invitation_id, child_id)`
+
+## 10. notifications
 
 | column | type | note |
 |---|---|---|
@@ -142,7 +156,7 @@ Index: `(organization_id, start_at)`, `(organization_id, status)`
 | sent_at | timestamptz | |
 | created_at / updated_at | timestamptz | |
 
-## 10. audit_logs
+## 11. audit_logs
 
 | column | type | note |
 |---|---|---|
@@ -170,7 +184,8 @@ organizations 1───* invitations
 organizations 1───* notifications
 organizations 1───* audit_logs
 
-parents *───* children   (via parent_children, verified_at必須)
+parents *───* children     (via parent_children, verified_at必須)
+invitations *───* children (via invitation_children, 家庭単位招待のみ)
 events  1───* attendances *───1 children
 attendances *───1 parents (responded_by_parent_id, nullable)
 ```

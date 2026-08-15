@@ -5,7 +5,7 @@ import './index.css'
 
 type Child = { id: string; first_name: string; last_name: string; grade: string | null }
 type ParentMe = { display_name: string; children: Child[] }
-type InvitationInfo = { invitation_code: string; organization_name: string; expires_at: string | null }
+type InvitationInfo = { invitation_code: string; organization_name: string; expires_at: string | null; children: Child[] }
 type AttendanceStatus = 'ATTENDING' | 'ABSENT' | 'LATE' | 'NO_RESPONSE'
 type ParentEvent = { id: string; title: string; description: string | null; start_at: string; end_at: string; location_name: string | null; children: { child_id: string; child_name: string; attendance_status: AttendanceStatus }[] }
 
@@ -25,6 +25,7 @@ function App() {
   const [me, setMe] = useState<ParentMe | null>(null)
   const [events, setEvents] = useState<ParentEvent[]>([])
   const [available, setAvailable] = useState<Child[]>([])
+  const [confirmed, setConfirmed] = useState<Child[]>([])
   const [selectedChild, setSelectedChild] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [bindError, setBindError] = useState('')
@@ -33,6 +34,13 @@ function App() {
   const [answerError, setAnswerError] = useState('')
   const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(null)
 
+  const familyChildren = invitationInfo?.children ?? []
+  const isFamilyInvitation = familyChildren.length > 0
+  const confirmedIds = new Set(confirmed.map((child) => child.id))
+  const pendingFamilyChildren = familyChildren.filter((child) => !confirmedIds.has(child.id))
+  const currentFamilyChild = pendingFamilyChildren[0] ?? null
+  const pendingRoster = available.filter((child) => !confirmedIds.has(child.id))
+
   async function loadPortal(readyPhase: 'ready' | 'completed' = 'ready') {
     const [meResponse, eventsResponse] = await Promise.all([
       apiClient.get<ParentMe>('/parent/me'), apiClient.get<ParentEvent[]>('/parent/events'),
@@ -40,8 +48,10 @@ function App() {
     setMe(meResponse.data)
     setEvents(eventsResponse.data)
     if (meResponse.data.children.length === 0) {
-      const children = await apiClient.get<Child[]>('/parent/children/available')
-      setAvailable(children.data)
+      if (!isFamilyInvitation) {
+        const children = await apiClient.get<Child[]>('/parent/children/available')
+        setAvailable(children.data)
+      }
       setPhase('binding')
     } else setPhase(readyPhase)
   }
@@ -78,12 +88,19 @@ function App() {
     initialize()
   }, [])
 
-  async function bindChild() {
+  async function bindChild(childId: string, birth: string) {
     setBindError('')
     try {
-      await apiClient.post('/parent/children/bind', { child_id: selectedChild, birth_date: birthDate })
-      await loadPortal('completed')
+      await apiClient.post('/parent/children/bind', { child_id: childId, birth_date: birth })
+      const child = (isFamilyInvitation ? familyChildren : available).find((candidate) => candidate.id === childId)
+      if (child) setConfirmed((prev) => [...prev, child])
+      setSelectedChild('')
+      setBirthDate('')
     } catch { setBindError('生年月日が一致しません。入力内容を確認してください。') }
+  }
+
+  async function finishOnboarding() {
+    await loadPortal('completed')
   }
 
   async function answer(eventId: string, childId: string, status: AttendanceStatus) {
@@ -100,7 +117,22 @@ function App() {
   }
 
   if (phase === 'loading' || phase === 'error') return <main className="center"><h1>習い事管理くん</h1><p>{phase === 'loading' ? message : `エラー：${message}`}</p></main>
-  if (phase === 'binding') return <main><section className="card onboarding"><p className="organization">{invitationInfo?.organization_name ?? '教室'}</p><div className="steps" aria-label="登録ステップ"><span className="done">1 招待確認</span><span className="current">2 お子様確認</span><span>3 完了</span></div><h1>お子様の確認</h1><p>{me?.display_name}さん、通っているお子様と生年月日を選択してください。</p>{bindError && <p className="error" role="alert">{bindError}</p>}{available.length === 0 ? <p className="error" role="alert">選択できるお子様がいません。教室の管理者にお問い合わせください。</p> : <><label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{available.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button className="primary" disabled={!selectedChild || !birthDate} onClick={bindChild}>確認して登録する</button></>}</section></main>
+  if (phase === 'binding') return <main><section className="card onboarding">
+    <p className="organization">{invitationInfo?.organization_name ?? '教室'}</p>
+    <div className="steps" aria-label="登録ステップ"><span className="done">1 招待確認</span><span className="current">2 お子様確認</span><span>3 完了</span></div>
+    <h1>お子様の確認</h1>
+    <p>{me?.display_name}さん、{isFamilyInvitation ? '招待に含まれるお子様の生年月日を確認してください。' : '通っているお子様と生年月日を選択してください。'}</p>
+    {bindError && <p className="error" role="alert">{bindError}</p>}
+    {isFamilyInvitation && <ul className="child-checklist">{familyChildren.map((child) => <li key={child.id} className={confirmedIds.has(child.id) ? 'done' : ''}>{confirmedIds.has(child.id) ? '✓ ' : ''}{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</li>)}</ul>}
+    {isFamilyInvitation
+      ? (currentFamilyChild
+        ? <><p>{currentFamilyChild.last_name} {currentFamilyChild.first_name}さんの生年月日を入力してください。</p><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button className="primary" disabled={!birthDate} onClick={() => bindChild(currentFamilyChild.id, birthDate)}>確認する</button></>
+        : <p>すべてのお子様を確認しました。</p>)
+      : (pendingRoster.length === 0 && confirmed.length === 0
+        ? <p className="error" role="alert">選択できるお子様がいません。教室の管理者にお問い合わせください。</p>
+        : pendingRoster.length > 0 && <><label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{pendingRoster.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button className="primary" disabled={!selectedChild || !birthDate} onClick={() => bindChild(selectedChild, birthDate)}>確認して登録する</button></>)}
+    {confirmed.length > 0 && <button className="primary" onClick={finishOnboarding}>登録を完了する（確認済み{confirmed.length}人）</button>}
+  </section></main>
 
   if (phase === 'completed') return <main className="center"><section className="card onboarding"><p className="organization">{invitationInfo?.organization_name ?? '教室'}</p><div className="steps" aria-label="登録ステップ"><span className="done">1 招待確認</span><span className="done">2 お子様確認</span><span className="current">3 完了</span></div><div className="complete-mark" aria-hidden="true">✓</div><h1>登録が完了しました</h1><p>これからLINEで活動予定の確認と出欠回答ができます。</p><button className="primary" onClick={() => setPhase('ready')}>活動予定を見る</button></section></main>
 

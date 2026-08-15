@@ -4,10 +4,22 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+DEFAULT_FAMILY_GUARDIAN_LIMIT = 2
+
+
+class InvitationChildSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    first_name: str
+    last_name: str
+    grade: str | None
+
 
 class InvitationCreate(BaseModel):
     expires_at: datetime | None = None
     max_uses: int | None = Field(default=None, ge=1, le=10000)
+    child_ids: list[uuid.UUID] = Field(default_factory=list, max_length=20)
 
     @model_validator(mode="after")
     def validate_expiry(self) -> "InvitationCreate":
@@ -29,9 +41,11 @@ class InvitationResponse(BaseModel):
     used_count: int
     status: Literal["ACTIVE", "DISABLED", "EXPIRED"]
     created_at: datetime
+    children: list[InvitationChildSummary] = Field(default_factory=list)
 
 
 class InvitationPublicResponse(BaseModel):
     invitation_code: str
     organization_name: str
     expires_at: datetime | None
+    children: list[InvitationChildSummary] = Field(default_factory=list)
