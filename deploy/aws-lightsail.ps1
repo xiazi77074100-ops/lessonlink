@@ -6,6 +6,7 @@ param(
     [string]$AwsProfile = "default",
     [string]$BundleId = "",
     [string]$Domain = "",
+    [switch]$Resume,
     [switch]$Yes
 )
 
@@ -52,8 +53,9 @@ function Read-DotEnv([string]$Path) {
 
 function New-RandomHex([int]$Bytes = 32) {
     $buffer = New-Object byte[] $Bytes
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($buffer)
-    return [Convert]::ToHexString($buffer).ToLowerInvariant()
+    $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $generator.GetBytes($buffer) } finally { $generator.Dispose() }
+    return [BitConverter]::ToString($buffer).Replace("-", "").ToLowerInvariant()
 }
 
 if (-not $awsCommand) {
@@ -101,45 +103,58 @@ if ($BundleId) {
 }
 if (-not $bundle) { throw "No matching Lightsail bundle was found. Specify -BundleId." }
 
-$existing = Invoke-AwsJson @("lightsail", "get-instances")
-if ($existing.instances | Where-Object { $_.name -eq $InstanceName }) {
-    throw "Lightsail instance '$InstanceName' already exists. Refusing to overwrite it."
-}
-
-Write-Host "Will create: $InstanceName / $($blueprint.blueprintId) / $($bundle.bundleId) / $($bundle.ramSizeInGb) GB RAM / USD $($bundle.price) per month"
-if (-not $Yes) {
-    $confirmation = Read-Host "This creates billable resources. Type CREATE to continue"
-    if ($confirmation -ne "CREATE") { throw "Cancelled." }
-}
-
 New-Item -ItemType Directory -Force -Path $deployDir | Out-Null
-$keyName = "$InstanceName-deploy-$((Get-Date).ToString('yyyyMMddHHmmss'))"
-$keyResult = Invoke-AwsJson @("lightsail", "create-key-pair", "--key-pair-name", $keyName)
-$keyPath = Join-Path $deployDir "$keyName.pem"
-$keyMaterial = [string]$keyResult.privateKeyBase64
-if ($keyMaterial -notmatch "BEGIN .*PRIVATE KEY") {
-    $keyMaterial = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($keyMaterial))
-}
-[IO.File]::WriteAllText($keyPath, $keyMaterial, [Text.UTF8Encoding]::new($false))
-& icacls $keyPath /inheritance:r /grant:r "$($env:USERNAME):(R)" | Out-Null
-
-Invoke-AwsJson @(
-    "lightsail", "create-instances", "--instance-names", $InstanceName,
-    "--availability-zone", $AvailabilityZone, "--blueprint-id", $blueprint.blueprintId,
-    "--bundle-id", $bundle.bundleId, "--key-pair-name", $keyName,
-    "--ip-address-type", "dualstack"
-) | Out-Null
-
-Write-Host "Waiting for the instance to start..."
-do {
-    Start-Sleep -Seconds 8
-    $instance = (Invoke-AwsJson @("lightsail", "get-instance", "--instance-name", $InstanceName)).instance
-} until ($instance.state.name -eq "running")
-
 $staticIpName = "$InstanceName-static-ip"
-Invoke-AwsJson @("lightsail", "allocate-static-ip", "--static-ip-name", $staticIpName) | Out-Null
-Invoke-AwsJson @("lightsail", "attach-static-ip", "--static-ip-name", $staticIpName, "--instance-name", $InstanceName) | Out-Null
-$staticIp = (Invoke-AwsJson @("lightsail", "get-static-ip", "--static-ip-name", $staticIpName)).staticIp.ipAddress
+$existing = Invoke-AwsJson @("lightsail", "get-instances")
+$instance = $existing.instances | Where-Object { $_.name -eq $InstanceName } | Select-Object -First 1
+if ($instance) {
+    if (-not $Resume) {
+        throw "Lightsail instance '$InstanceName' already exists. Use -Resume to continue its deployment."
+    }
+    $keyFile = Get-ChildItem -LiteralPath $deployDir -Filter "$InstanceName-deploy-*.pem" |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if (-not $keyFile) { throw "No local deployment key was found for '$InstanceName'." }
+    $keyPath = $keyFile.FullName
+    $staticIpResult = Invoke-AwsJson @("lightsail", "get-static-ip", "--static-ip-name", $staticIpName)
+    if (-not $staticIpResult.staticIp.isAttached -or $staticIpResult.staticIp.attachedTo -ne $InstanceName) {
+        throw "Static IP '$staticIpName' is not attached to '$InstanceName'."
+    }
+    $staticIp = $staticIpResult.staticIp.ipAddress
+    Write-Host "Resuming deployment to $InstanceName at $staticIp"
+} else {
+    Write-Host "Will create: $InstanceName / $($blueprint.blueprintId) / $($bundle.bundleId) / $($bundle.ramSizeInGb) GB RAM / USD $($bundle.price) per month"
+    if (-not $Yes) {
+        $confirmation = Read-Host "This creates billable resources. Type CREATE to continue"
+        if ($confirmation -ne "CREATE") { throw "Cancelled." }
+    }
+
+    $keyName = "$InstanceName-deploy-$((Get-Date).ToString('yyyyMMddHHmmss'))"
+    $keyResult = Invoke-AwsJson @("lightsail", "create-key-pair", "--key-pair-name", $keyName)
+    $keyPath = Join-Path $deployDir "$keyName.pem"
+    $keyMaterial = [string]$keyResult.privateKeyBase64
+    if ($keyMaterial -notmatch "BEGIN .*PRIVATE KEY") {
+        $keyMaterial = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($keyMaterial))
+    }
+    [IO.File]::WriteAllText($keyPath, $keyMaterial, [Text.UTF8Encoding]::new($false))
+    & icacls $keyPath /inheritance:r /grant:r "$($env:USERNAME):(R)" | Out-Null
+
+    Invoke-AwsJson @(
+        "lightsail", "create-instances", "--instance-names", $InstanceName,
+        "--availability-zone", $AvailabilityZone, "--blueprint-id", $blueprint.blueprintId,
+        "--bundle-id", $bundle.bundleId, "--key-pair-name", $keyName,
+        "--ip-address-type", "dualstack"
+    ) | Out-Null
+
+    Write-Host "Waiting for the instance to start..."
+    do {
+        Start-Sleep -Seconds 8
+        $instance = (Invoke-AwsJson @("lightsail", "get-instance", "--instance-name", $InstanceName)).instance
+    } until ($instance.state.name -eq "running")
+
+    Invoke-AwsJson @("lightsail", "allocate-static-ip", "--static-ip-name", $staticIpName) | Out-Null
+    Invoke-AwsJson @("lightsail", "attach-static-ip", "--static-ip-name", $staticIpName, "--instance-name", $InstanceName) | Out-Null
+    $staticIp = (Invoke-AwsJson @("lightsail", "get-static-ip", "--static-ip-name", $staticIpName)).staticIp.ipAddress
+}
 
 foreach ($port in 80, 443) {
     Invoke-AwsJson @("lightsail", "open-instance-public-ports", "--instance-name", $InstanceName, "--port-info", "fromPort=$port,toPort=$port,protocol=tcp") | Out-Null
