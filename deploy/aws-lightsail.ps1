@@ -164,12 +164,19 @@ foreach ($port in 80, 443) {
 
 if ([string]::IsNullOrWhiteSpace($Domain)) { $Domain = "$($staticIp.Replace('.', '-')).sslip.io" }
 
-$productionLines = @(
-    "DOMAIN=$Domain", "POSTGRES_DB=lessonlink", "POSTGRES_USER=lessonlink",
-    "POSTGRES_PASSWORD=$(New-RandomHex)", "JWT_SECRET=$(New-RandomHex)",
-    "JWT_ALGORITHM=HS256", "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=720"
-) + ($requiredLineKeys | ForEach-Object { "$_=$($sourceEnv[$_])" })
-[IO.File]::WriteAllLines($productionEnvPath, $productionLines, [Text.UTF8Encoding]::new($false))
+if ($Resume -and (Test-Path -LiteralPath $productionEnvPath)) {
+    Write-Host "Reusing the existing local production secrets for this deployment."
+} else {
+    $productionLines = @(
+        "DOMAIN=$Domain", "POSTGRES_DB=lessonlink", "POSTGRES_USER=lessonlink",
+        "POSTGRES_PASSWORD=$(New-RandomHex)", "JWT_SECRET=$(New-RandomHex)",
+        "JWT_ALGORITHM=HS256", "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=720"
+    ) + ($requiredLineKeys | ForEach-Object { "$_=$($sourceEnv[$_])" })
+    [IO.File]::WriteAllLines($productionEnvPath, $productionLines, [Text.UTF8Encoding]::new($false))
+}
+$productionPrincipal = "$($env:USERDOMAIN)\$($env:USERNAME)"
+& icacls $productionEnvPath /inheritance:r /grant:r "${productionPrincipal}:(R,W)" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "Could not secure the local production environment file ACL." }
 
 & git -C $repoRoot archive --format=tar.gz -o $archivePath HEAD
 if ($LASTEXITCODE -ne 0) { throw "git archive failed. Commit changes and retry." }
@@ -195,7 +202,6 @@ $remoteCommand = "tar -xzf /tmp/lessonlink.tar.gz -C /opt/lessonlink && mv /tmp/
 & ssh.exe @sshArgs $sshTarget $remoteCommand
 if ($LASTEXITCODE -ne 0) { throw "Remote deployment failed. Review the preceding logs." }
 
-Remove-Item -LiteralPath $productionEnvPath -Force
 Write-Host "`nDeployment complete"
 Write-Host "Admin:         https://$Domain/"
 Write-Host "LIFF Endpoint: https://$Domain/parent/"

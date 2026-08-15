@@ -33,6 +33,7 @@ Static IPを使った `sslip.io` の一時ホスト名を利用する。
 ```
 
 秘密情報とSSH keyはGit管理外の `.deploy/` に置く。作成後の秘密情報は画面へ表示しない。
+`.deploy/.env.production` は既存DBへ再デプロイするときに必要なため、安全に保管して削除しない。
 AWS resource作成後に処理が失敗した場合、再実行で同名instanceを上書きせず停止するため、
 ログを確認し、ローカルの `.deploy/` にSSH keyが残っていれば `-Resume` で同じinstanceへの
 デプロイを続行できる:

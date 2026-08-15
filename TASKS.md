@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 12完了・AWS Lightsail一括デプロイスクリプト実装（AWS CLI認証・実行待ち）**
+現在地: **AWS Lightsail本番公開完了（LIFF Endpoint設定・LINE実機検証待ち）**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -109,6 +109,6 @@
 
 ## 次にやること
 
-1. AWS CLIをインストール・認証し、`deploy/aws-lightsail.ps1` でLightsail作成から公開まで実行
-2. LINE DevelopersのLIFF Endpoint URLを公開URLへ変更
-3. 実機でLIFFログイン・招待参加・出欠回答・通知を確認
+1. LINE DevelopersのLIFF Endpoint URLを `https://52-193-158-128.sslip.io/parent/` へ変更
+2. 実機でLIFFログイン・招待参加・出欠回答・通知を確認
+3. 実利用前にLightsail自動スナップショットとAWS Budget通知を設定
