@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 9/10（LINE・通知）実装完了・実機検証は外部設定待ち → Phase 11へ**
+現在地: **Phase 11（Testing）完了 → Phase 12（UX Polish）へ（LINE実機検証は継続待ち）**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -94,10 +94,10 @@
 
 ## Phase 11 — Testing
 
-- [ ] Unit test一式
-- [ ] API test一式
-- [ ] テナント分離テスト（要件.md 36節 Test1-6）
-- [ ] E2E（要件.md 37節のHappy Path）
+- [x] Unit test一式
+- [x] API test一式（PostgreSQL実DBテストをCIにも追加）
+- [x] テナント分離テスト（要件.md 36節 Test1-6）
+- [x] API E2E（要件.md 37節のHappy Path、LINE送信のみmock）
 
 ## Phase 12 — UX Polish
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. LINE Developers設定完了後、実機でLIFFログイン・招待参加・出欠回答・通知を確認
-2. Phase 11着手: Unit/API/テナント分離/E2Eテストを拡充
+1. Phase 12着手: 状態表示・モバイルUI・日本語UIの最終確認
+2. 公開HTTPS Endpoint準備後、実機でLIFFログイン・招待参加・出欠回答・通知を確認

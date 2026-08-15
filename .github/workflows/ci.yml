@@ -8,6 +8,23 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lessonlink
+          POSTGRES_PASSWORD: lessonlink
+          POSTGRES_DB: lessonlink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lessonlink"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://lessonlink:lessonlink@localhost:5432/lessonlink
+      RUN_INTEGRATION_TESTS: "1"
     defaults:
       run:
         working-directory: backend
@@ -17,6 +34,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
+      - run: alembic upgrade head
       - run: ruff check app tests
       - run: pytest -q
 
