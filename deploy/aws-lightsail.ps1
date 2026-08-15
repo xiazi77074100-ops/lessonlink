@@ -17,7 +17,8 @@ $deployDir = Join-Path $repoRoot ".deploy"
 $backendEnvPath = Join-Path $repoRoot "backend\.env"
 $archivePath = Join-Path $deployDir "lessonlink.tar.gz"
 $productionEnvPath = Join-Path $deployDir ".env.production"
-$awsCommand = (Get-Command "aws" -ErrorAction SilentlyContinue).Source
+$awsCommandInfo = Get-Command "aws" -ErrorAction SilentlyContinue
+$awsCommand = if ($awsCommandInfo) { $awsCommandInfo.Source } else { $null }
 if (-not $awsCommand) {
     $defaultAwsPath = "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
     if (Test-Path -LiteralPath $defaultAwsPath) { $awsCommand = $defaultAwsPath }
