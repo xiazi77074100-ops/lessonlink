@@ -17,6 +17,11 @@ $deployDir = Join-Path $repoRoot ".deploy"
 $backendEnvPath = Join-Path $repoRoot "backend\.env"
 $archivePath = Join-Path $deployDir "lessonlink.tar.gz"
 $productionEnvPath = Join-Path $deployDir ".env.production"
+$awsCommand = (Get-Command "aws" -ErrorAction SilentlyContinue).Source
+if (-not $awsCommand) {
+    $defaultAwsPath = "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
+    if (Test-Path -LiteralPath $defaultAwsPath) { $awsCommand = $defaultAwsPath }
+}
 
 function Require-Command([string]$Name, [string]$InstallHint) {
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -25,7 +30,7 @@ function Require-Command([string]$Name, [string]$InstallHint) {
 }
 
 function Invoke-AwsJson([string[]]$Arguments) {
-    $result = & aws @Arguments --region $Region --profile $AwsProfile --output json
+    $result = & $script:awsCommand @Arguments --region $Region --profile $AwsProfile --output json
     if ($LASTEXITCODE -ne 0) { throw "AWS CLI command failed: aws $($Arguments -join ' ')" }
     if ([string]::IsNullOrWhiteSpace(($result -join "`n"))) { return $null }
     return (($result -join "`n") | ConvertFrom-Json)
@@ -47,7 +52,9 @@ function New-RandomHex([int]$Bytes = 32) {
     return [Convert]::ToHexString($buffer).ToLowerInvariant()
 }
 
-Require-Command "aws" "Install AWS CLI v2, then run 'aws configure --profile $AwsProfile': https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+if (-not $awsCommand) {
+    throw "AWS CLI v2 was not found. Install it, then run 'aws configure --profile $AwsProfile': https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+}
 Require-Command "git" "Install Git first."
 Require-Command "ssh.exe" "Enable the Windows OpenSSH Client optional feature."
 Require-Command "scp.exe" "Enable the Windows OpenSSH Client optional feature."

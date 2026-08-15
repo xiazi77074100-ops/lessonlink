@@ -5,10 +5,10 @@ FastAPI、PostgreSQLを Docker Compose で配置する。CaddyがTLS証明書を
 
 ## PowerShell一括デプロイ（推奨）
 
-WindowsではAWS CLI v2をインストールし、最初の一度だけ認証する:
+WindowsではAWS CLI v2 (2.32.0以上) をインストールし、最初の一度だけブラウザ認証する:
 
 ```powershell
-aws configure
+aws login --region ap-northeast-1
 aws sts get-caller-identity
 ```
 
