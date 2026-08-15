@@ -42,7 +42,9 @@ The primary action is `LINEで招待する`. Secondary actions are copy URL, dis
 
 Two invitation types are retained:
 
-- Child invitation: one child, one use, short expiry. This is the default from a child detail.
+- Family invitation: one or more children from the same organization, short expiry, and a controlled
+  guardian limit. This is the default from child/parent management. A parent confirms all included
+  children in one onboarding flow; another guardian can use the same invitation only when allowed.
 - Organization invitation: multiple uses. This is for initial rollout or sharing in an existing
   organization-wide parent group.
 
@@ -68,9 +70,9 @@ Onboarding is a short wizard with visible progress:
 2. Confirm child and birth date
 3. Completion
 
-A child-specific invitation preselects and hides the child selector. An organization invitation
-retains child selection plus birth-date verification. Errors explain how to recover and when to
-contact the organization.
+A family invitation lists only its included children and supports confirming multiple siblings in
+one flow. An organization invitation retains child selection plus birth-date verification. Errors
+explain how to recover and when to contact the organization.
 
 ### 3.2 Attendance home
 
@@ -88,7 +90,8 @@ contact the organization.
 
 - Admin can share an invitation through LINE with one primary action.
 - Admin can still copy the URL or show the QR.
-- Child-specific, single-use, expiring invitations are supported.
+- Family invitations support one or more siblings, expiry, and a controlled guardian-use limit.
+- Invitation use is counted per unique parent; retrying login never consumes another use.
 - Parent onboarding shows organization, progress, and completion states.
 - The invitation path is usable on a 375 px-wide screen.
 - Invite validation and child binding remain tenant-safe and auditable.
