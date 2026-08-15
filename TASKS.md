@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **AWS Lightsail本番公開完了（LIFF Endpoint設定・LINE実機検証待ち）**
+現在地: **AWS Lightsail本番公開完了 → Phase 13（Invitation & Onboarding UX）着手**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -105,10 +105,25 @@
 - [x] モバイルUI対応（レスポンシブ実装・ビルド確認。LIFF実機表示は公開HTTPS準備後）
 - [x] 日本語UI最終チェック
 
+## Phase 13 — Invitation & Onboarding UX
+
+- [x] 組織Admin / 保護者LIFFのUX方針・受入条件を文書化
+- [ ] Admin: `LINEで招待する` を主操作として追加
+- [ ] 子供専用・1回限り・期限付き招待
+- [ ] Parent: 組織確認 → 子供確認 → 完了の段階表示
+- [ ] 375px幅で招待・紐付けフローを確認
+
+## Phase 14 — Daily Operations UX
+
+- [ ] Admin運用ホーム（近日活動・未回答・未紐付け・送信失敗）
+- [ ] 活動通知の送信成功・失敗・未紐付け集計
+- [ ] Adminモバイルナビゲーション
+- [ ] Parent活動カードの全状態最終調整
+
 ---
 
 ## 次にやること
 
-1. LINE DevelopersのLIFF Endpoint URLを `https://52-193-158-128.sslip.io/parent/` へ変更
-2. 実機でLIFFログイン・招待参加・出欠回答・通知を確認
+1. Phase 13: AdminのLINE招待共有と子供専用招待を実装
+2. LINE DevelopersのLIFF Endpoint URLを `https://52-193-158-128.sslip.io/parent/` へ変更して実機確認
 3. 実利用前にLightsail自動スナップショットとAWS Budget通知を設定
