@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 1（Project Setup）進行中**
+現在地: **Phase 1（Project Setup）完了 → Phase 2（Database）へ**
 
 ## Phase 0 — 要件レビュー & ドキュメント
 
@@ -24,13 +24,14 @@
 - [x] Backend: pytest + ruff 動作確認（`backend/.venv` 作成済み、テストPASS）
 - [x] Backend: Alembic 初期設定（マイグレーションはPhase 2で追加）
 - [x] Backend: Dockerfile
-- [ ] Frontend-admin: Vite + React + TS + MUI 雛形
-- [ ] Frontend-parent: Vite + React + TS 雛形（LIFF連携はPhase 9）
-- [ ] docker-compose.yml（backend + postgres + frontend-admin + frontend-parent）
-- [ ] `.env.example`
-- [ ] CI（GitHub Actions: backend lint/test, frontend build）
-- [ ] README.md（起動手順）
-- [ ] Phase 1 完了コミット & 報告
+- [x] Frontend-admin: Vite + React + TS + MUI 雛形(health check画面、build/lint確認済み)
+- [x] Frontend-parent: Vite + React + TS 雛形（LIFF連携はPhase 9、health check画面のみ、build/lint確認済み）
+- [x] docker-compose.yml（backend + postgres + frontend-admin + frontend-parent）
+- [x] `.env.example`（backend/frontend-admin/frontend-parent）
+- [x] CI（GitHub Actions: backend lint/test, frontend build/lint）
+- [x] README.md（起動手順）
+- [x] `docker-compose.yml` の構文検証（`docker compose config` はOK）。実際の `docker compose up` はこのマシンでDocker Desktopが起動しておらず未確認 → 次にDocker Desktopを起動した状態で再確認すること
+- [x] Phase 1 完了コミット & 報告
 
 ## Phase 2 — Database
 
@@ -103,10 +104,9 @@
 
 ---
 
-## 次にやること（このセッションの続き）
+## 次にやること
 
-1. frontend-admin, frontend-parent の Vite 雛形作成
-2. docker-compose.yml と .env.example
-3. GitHub Actions CI
-4. README.md
-5. Phase 1 完了コミット、Phase 2（DB）へ
+1. （任意）Docker Desktopを起動した状態で `docker compose up` の実機確認
+2. Phase 2着手: `backend/app/models/` にSQLAlchemyモデルを実装（`docs/database.md` の全テーブル）
+3. Alembic初期マイグレーション生成・適用
+4. Seedスクリプト作成

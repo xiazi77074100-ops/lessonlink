@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lessonlink
+      POSTGRES_PASSWORD: lessonlink
+      POSTGRES_DB: lessonlink
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lessonlink"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lessonlink:lessonlink@postgres:5432/lessonlink
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+  frontend-admin:
+    build: ./frontend-admin
+    env_file:
+      - ./frontend-admin/.env
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend-admin:/app
+      - /app/node_modules
+
+  frontend-parent:
+    build: ./frontend-parent
+    env_file:
+      - ./frontend-parent/.env
+    ports:
+      - "5174:5174"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend-parent:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
