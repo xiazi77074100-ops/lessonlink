@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 2（Database）完了 → Phase 3（Admin Authentication）へ**
+現在地: **Phase 3（Admin Authentication）完了 → Phase 4（Organization）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -45,10 +45,10 @@
 
 ## Phase 3 — Admin Authentication
 
-- [ ] `POST /api/v1/auth/login`（email+password, bcrypt検証, JWT発行）
-- [ ] `GET /api/v1/me`
-- [ ] 認可ミドルウェア（JWT検証 → current_user注入）
-- [ ] Admin frontend: ログイン画面
+- [x] `POST /api/v1/auth/login`（email+password, bcrypt検証, JWT発行）
+- [x] `GET /api/v1/me`
+- [x] 認可ミドルウェア（JWT検証 → current_user注入）
+- [x] Admin frontend: ログイン画面
 
 ## Phase 4 — Organization
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 3着手: `POST /api/v1/auth/login`、`GET /api/v1/me`、JWT認可ミドルウェア
-2. Admin frontend: ログイン画面（seedしたadmin@example.com / password123でログインできること）
+1. Phase 4着手: 組織作成・取得・更新 API
+2. Admin frontend: 組織作成・設定画面
