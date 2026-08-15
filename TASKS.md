@@ -108,9 +108,9 @@
 ## Phase 13 — Invitation & Onboarding UX
 
 - [x] 組織Admin / 保護者LIFFのUX方針・受入条件を文書化
-- [ ] Admin: `LINEで招待する` を主操作として追加
+- [x] Admin: `LINEで招待する` を主操作として追加
 - [ ] 子供専用・1回限り・期限付き招待
-- [ ] Parent: 組織確認 → 子供確認 → 完了の段階表示
+- [x] Parent: 組織確認 → 子供確認 → 完了の段階表示
 - [ ] 375px幅で招待・紐付けフローを確認
 
 ## Phase 14 — Daily Operations UX

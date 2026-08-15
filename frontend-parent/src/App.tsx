@@ -5,6 +5,7 @@ import './index.css'
 
 type Child = { id: string; first_name: string; last_name: string; grade: string | null }
 type ParentMe = { display_name: string; children: Child[] }
+type InvitationInfo = { invitation_code: string; organization_name: string; expires_at: string | null }
 type AttendanceStatus = 'ATTENDING' | 'ABSENT' | 'LATE' | 'NO_RESPONSE'
 type ParentEvent = { id: string; title: string; description: string | null; start_at: string; end_at: string; location_name: string | null; children: { child_id: string; child_name: string; attendance_status: AttendanceStatus }[] }
 
@@ -19,7 +20,7 @@ function invitationCode() {
 }
 
 function App() {
-  const [phase, setPhase] = useState<'loading' | 'binding' | 'ready' | 'error'>('loading')
+  const [phase, setPhase] = useState<'loading' | 'binding' | 'completed' | 'ready' | 'error'>('loading')
   const [message, setMessage] = useState('LINEログインを確認しています…')
   const [me, setMe] = useState<ParentMe | null>(null)
   const [events, setEvents] = useState<ParentEvent[]>([])
@@ -30,8 +31,9 @@ function App() {
   const [savedKey, setSavedKey] = useState('')
   const [answeringKey, setAnsweringKey] = useState('')
   const [answerError, setAnswerError] = useState('')
+  const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(null)
 
-  async function loadPortal() {
+  async function loadPortal(readyPhase: 'ready' | 'completed' = 'ready') {
     const [meResponse, eventsResponse] = await Promise.all([
       apiClient.get<ParentMe>('/parent/me'), apiClient.get<ParentEvent[]>('/parent/events'),
     ])
@@ -41,7 +43,7 @@ function App() {
       const children = await apiClient.get<Child[]>('/parent/children/available')
       setAvailable(children.data)
       setPhase('binding')
-    } else setPhase('ready')
+    } else setPhase(readyPhase)
   }
 
   useEffect(() => {
@@ -52,6 +54,10 @@ function App() {
         }
         const invitation = invitationCode()
         if (!invitation) throw new Error('招待URLからアクセスしてください。')
+        setMessage('招待内容を確認しています…')
+        const invitationResponse = await apiClient.get<InvitationInfo>(`/invitations/code/${encodeURIComponent(invitation)}`)
+        setInvitationInfo(invitationResponse.data)
+        setMessage('LINEログインを確認しています…')
         let idToken = import.meta.env.VITE_LINE_MOCK_TOKEN as string | undefined
         if (!idToken) {
           const liffId = import.meta.env.VITE_LIFF_ID
@@ -76,7 +82,7 @@ function App() {
     setBindError('')
     try {
       await apiClient.post('/parent/children/bind', { child_id: selectedChild, birth_date: birthDate })
-      await loadPortal()
+      await loadPortal('completed')
     } catch { setBindError('生年月日が一致しません。入力内容を確認してください。') }
   }
 
@@ -94,7 +100,9 @@ function App() {
   }
 
   if (phase === 'loading' || phase === 'error') return <main className="center"><h1>習い事管理くん</h1><p>{phase === 'loading' ? message : `エラー：${message}`}</p></main>
-  if (phase === 'binding') return <main><section className="card"><h1>お子様の確認</h1><p>{me?.display_name}さん、通っているお子様と生年月日を選択してください。</p>{bindError && <p className="error" role="alert">{bindError}</p>}{available.length === 0 ? <p className="error" role="alert">選択できるお子様がいません。教室の管理者にお問い合わせください。</p> : <><label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{available.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button disabled={!selectedChild || !birthDate} onClick={bindChild}>確認して進む</button></>}</section></main>
+  if (phase === 'binding') return <main><section className="card onboarding"><p className="organization">{invitationInfo?.organization_name ?? '教室'}</p><div className="steps" aria-label="登録ステップ"><span className="done">1 招待確認</span><span className="current">2 お子様確認</span><span>3 完了</span></div><h1>お子様の確認</h1><p>{me?.display_name}さん、通っているお子様と生年月日を選択してください。</p>{bindError && <p className="error" role="alert">{bindError}</p>}{available.length === 0 ? <p className="error" role="alert">選択できるお子様がいません。教室の管理者にお問い合わせください。</p> : <><label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{available.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button className="primary" disabled={!selectedChild || !birthDate} onClick={bindChild}>確認して登録する</button></>}</section></main>
+
+  if (phase === 'completed') return <main className="center"><section className="card onboarding"><p className="organization">{invitationInfo?.organization_name ?? '教室'}</p><div className="steps" aria-label="登録ステップ"><span className="done">1 招待確認</span><span className="done">2 お子様確認</span><span className="current">3 完了</span></div><div className="complete-mark" aria-hidden="true">✓</div><h1>登録が完了しました</h1><p>これからLINEで活動予定の確認と出欠回答ができます。</p><button className="primary" onClick={() => setPhase('ready')}>活動予定を見る</button></section></main>
 
   return <main><header><h1>習い事管理くん</h1><p>{me?.display_name}さん</p></header>{answerError && <p className="error" role="alert">{answerError}</p>}{events.length === 0 && <section className="card"><p>現在、回答できる活動はありません。</p></section>}{events.map((lesson) => <section className="card" key={lesson.id}><p className="date">{new Date(lesson.start_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}</p><h2>{lesson.title}</h2>{lesson.location_name && <p>📍 {lesson.location_name}</p>}{lesson.children.map((child) => { const key = `${lesson.id}:${child.child_id}`; const saving = answeringKey === key; return <div className="answer" key={child.child_id}><strong>{child.child_name}</strong><div className="buttons"><button disabled={saving} className={child.attendance_status === 'ATTENDING' ? 'active' : ''} onClick={() => answer(lesson.id, child.child_id, 'ATTENDING')}>参加</button><button disabled={saving} className={child.attendance_status === 'ABSENT' ? 'active absent' : ''} onClick={() => answer(lesson.id, child.child_id, 'ABSENT')}>欠席</button><button disabled={saving} className={child.attendance_status === 'LATE' ? 'active late' : ''} onClick={() => answer(lesson.id, child.child_id, 'LATE')}>遅刻</button></div>{saving && <p className="saved" aria-live="polite">保存中…</p>}{!saving && savedKey === key && <p className="saved" aria-live="polite">回答しました。ありがとうございます。</p>}</div>})}</section>)}</main>
 }

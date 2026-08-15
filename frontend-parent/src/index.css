@@ -12,6 +12,14 @@ label { display: grid; gap: 7px; margin: 18px 0; font-weight: 700; }
 select, input { width: 100%; min-height: 48px; border: 1px solid #b7c4b9; border-radius: 10px; padding: 10px; font-size: 16px; background: white; }
 button { border: 0; border-radius: 11px; min-height: 46px; padding: 10px 18px; font-size: 16px; font-weight: 700; color: #25632a; background: #e4f2e5; cursor: pointer; }
 button:disabled { opacity: .45; cursor: default; }
+.primary { width: 100%; color: white; background: #2e7d32; }
+.organization { color: #2e7d32; font-weight: 700; margin: 0 0 12px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 24px; color: #7a857c; font-size: 12px; text-align: center; }
+.steps span { border-top: 4px solid #d9e0da; padding-top: 7px; }
+.steps .done, .steps .current { color: #25632a; border-color: #2e7d32; font-weight: 700; }
+.complete-mark { display: grid; place-items: center; width: 64px; height: 64px; margin: 20px auto; border-radius: 50%; color: white; background: #2e7d32; font-size: 36px; font-weight: 700; }
+.onboarding { width: 100%; text-align: left; }
+.onboarding .complete-mark + h1, .onboarding .complete-mark ~ p { text-align: center; }
 .answer { border-top: 1px solid #e1e7e2; padding-top: 16px; margin-top: 16px; }
 .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .buttons .active { color: white; background: #2e7d32; }

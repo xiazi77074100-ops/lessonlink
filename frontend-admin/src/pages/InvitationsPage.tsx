@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import ShareIcon from '@mui/icons-material/Share'
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
@@ -19,6 +20,7 @@ export function InvitationsPage({ user }: { user: AdminUser }) {
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [error, setError] = useState(false)
   const invitationUrl = selected ? `${parentAppUrl}?invitation=${encodeURIComponent(selected.invitation_code)}` : ''
+  const shareUrl = invitationUrl ? `https://line.me/R/share?text=${encodeURIComponent(`教室から保護者登録のご案内です。\n以下のリンクからLINEで登録してください。\n${invitationUrl}`)}` : ''
 
   useEffect(() => { if (invitationUrl) QRCode.toDataURL(invitationUrl, { width: 320, margin: 2 }).then(setQrDataUrl) }, [invitationUrl])
 
@@ -41,11 +43,15 @@ export function InvitationsPage({ user }: { user: AdminUser }) {
     await queryClient.invalidateQueries({ queryKey: ['invitations'] })
   }
 
+  function shareWithLine() {
+    window.open(shareUrl, '_blank', 'noopener,noreferrer')
+  }
+
   return <Paper sx={{ mt: 3, p: { xs: 2, sm: 4 } }}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}><Typography variant="h5">招待管理</Typography><Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsCreateOpen(true)} disabled={user.role === 'STAFF'}>招待を発行</Button></Box>
     {isLoading && <Typography>読み込み中…</Typography>}{isError && <Alert severity="error">招待一覧を取得できませんでした。</Alert>}{!isLoading && !isError && data.length === 0 && <Alert severity="info">発行済みの招待はありません。</Alert>}
-    {data.length > 0 && <TableContainer><Table><TableHead><TableRow><TableCell>発行日時</TableCell><TableCell>使用回数</TableCell><TableCell>有効期限</TableCell><TableCell>状態</TableCell><TableCell /></TableRow></TableHead><TableBody>{data.map((invitation) => <TableRow key={invitation.id}><TableCell>{new Date(invitation.created_at).toLocaleString('ja-JP')}</TableCell><TableCell>{invitation.used_count} / {invitation.max_uses ?? '無制限'}</TableCell><TableCell>{invitation.expires_at ? new Date(invitation.expires_at).toLocaleString('ja-JP') : '無期限'}</TableCell><TableCell>{statusLabel[invitation.status]}</TableCell><TableCell align="right"><Button onClick={() => setSelected(invitation)}>QR表示</Button>{invitation.status === 'ACTIVE' && <Button color="error" onClick={() => disable(invitation)} disabled={user.role === 'STAFF'}>無効化</Button>}</TableCell></TableRow>)}</TableBody></Table></TableContainer>}
-    <Dialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} fullWidth maxWidth="xs"><Box component="form" onSubmit={create}><DialogTitle>招待を発行</DialogTitle><DialogContent sx={{ display: 'grid', gap: 2, pt: '12px !important' }}>{error && <Alert severity="error">発行できませんでした。</Alert>}<TextField name="expires_at" label="有効期限（任意）" type="datetime-local" slotProps={{ inputLabel: { shrink: true } }} /><TextField name="max_uses" label="利用上限（任意）" type="number" slotProps={{ htmlInput: { min: 1, max: 10000 } }} /></DialogContent><DialogActions><Button onClick={() => setIsCreateOpen(false)}>キャンセル</Button><Button type="submit" variant="contained">発行</Button></DialogActions></Box></Dialog>
-    <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} fullWidth maxWidth="xs"><DialogTitle>保護者招待QR</DialogTitle><DialogContent sx={{ textAlign: 'center' }}>{qrDataUrl && <Box component="img" src={qrDataUrl} alt="保護者招待QRコード" sx={{ width: '100%', maxWidth: 320 }} />}<Typography variant="body2" sx={{ wordBreak: 'break-all', my: 2 }}>{invitationUrl}</Typography><Button startIcon={<ContentCopyIcon />} onClick={() => navigator.clipboard.writeText(invitationUrl)}>URLをコピー</Button></DialogContent><DialogActions><Button onClick={() => setSelected(null)}>閉じる</Button></DialogActions></Dialog>
+    {data.length > 0 && <TableContainer><Table><TableHead><TableRow><TableCell>発行日時</TableCell><TableCell>使用回数</TableCell><TableCell>有効期限</TableCell><TableCell>状態</TableCell><TableCell /></TableRow></TableHead><TableBody>{data.map((invitation) => <TableRow key={invitation.id}><TableCell>{new Date(invitation.created_at).toLocaleString('ja-JP')}</TableCell><TableCell>{invitation.used_count} / {invitation.max_uses ?? '無制限'}</TableCell><TableCell>{invitation.expires_at ? new Date(invitation.expires_at).toLocaleString('ja-JP') : '無期限'}</TableCell><TableCell>{statusLabel[invitation.status]}</TableCell><TableCell align="right"><Button startIcon={<ShareIcon />} onClick={() => setSelected(invitation)}>共有</Button>{invitation.status === 'ACTIVE' && <Button color="error" onClick={() => disable(invitation)} disabled={user.role === 'STAFF'}>無効化</Button>}</TableCell></TableRow>)}</TableBody></Table></TableContainer>}
+    <Dialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} fullWidth maxWidth="xs"><Box component="form" onSubmit={create}><DialogTitle>保護者を招待</DialogTitle><DialogContent sx={{ display: 'grid', gap: 2, pt: '12px !important' }}>{error && <Alert severity="error">発行できませんでした。</Alert>}<Alert severity="info">発行後、LINEで保護者または既存のグループへ送信できます。</Alert><TextField name="expires_at" label="有効期限（任意）" type="datetime-local" slotProps={{ inputLabel: { shrink: true } }} /><TextField name="max_uses" label="利用上限（任意）" helperText="グループで共有する場合は対象家庭数を入力してください" type="number" slotProps={{ htmlInput: { min: 1, max: 10000 } }} /></DialogContent><DialogActions><Button onClick={() => setIsCreateOpen(false)}>キャンセル</Button><Button type="submit" variant="contained">発行して共有</Button></DialogActions></Box></Dialog>
+    <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} fullWidth maxWidth="xs"><DialogTitle>保護者を招待</DialogTitle><DialogContent sx={{ textAlign: 'center' }}><Typography sx={{ mb: 2 }}>LINEの友だち・グループへ招待を送信できます。</Typography><Button fullWidth size="large" variant="contained" startIcon={<ShareIcon />} onClick={shareWithLine} disabled={selected?.status !== 'ACTIVE'}>LINEで招待する</Button><Box sx={{ my: 1 }}><Button startIcon={<ContentCopyIcon />} onClick={() => navigator.clipboard.writeText(invitationUrl)}>URLをコピー</Button></Box>{qrDataUrl && <Box component="img" src={qrDataUrl} alt="保護者招待QRコード" sx={{ width: '100%', maxWidth: 240 }} />}<Typography variant="caption" sx={{ display: 'block', wordBreak: 'break-all', mt: 2 }}>{invitationUrl}</Typography></DialogContent><DialogActions><Button onClick={() => setSelected(null)}>閉じる</Button></DialogActions></Dialog>
   </Paper>
 }
