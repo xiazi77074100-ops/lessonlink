@@ -6,7 +6,9 @@
 
 ## 全体ステータス
 
-現在地: **Phase 1（Project Setup）完了 → Phase 2（Database）へ**
+現在地: **Phase 2（Database）完了 → Phase 3（Admin Authentication）へ**
+
+⚠️ **既知の環境問題（このマシン固有、コードの問題ではない）**: 開発機の `C:` ドライブの空き容量が約3MBしかない(2026-08-15時点)。Docker Desktop/WSL2の仮想ディスクがこの上にあるため、`docker compose build` がイメージレイヤーのcommit時に "read-only file system" エラーで失敗する(WSL2側のディスクが容量不足でread-onlyに落ちるため)。`C:` ドライブの空き容量を増やすまで `docker compose up --build` でのフルスタック起動確認はできない。DB自体の検証は `backend/.venv` + dockerのpostgresコンテナ単体で完了できたので、Phase 2の完了自体はブロックされていない。
 
 ## Phase 0 — 要件レビュー & ドキュメント
 
@@ -35,10 +37,11 @@
 
 ## Phase 2 — Database
 
-- [ ] SQLAlchemy モデル実装（organizations, admin_users, parents, children, parent_children, events, attendances, invitations, notifications, audit_logs）
-- [ ] Alembic 初期マイグレーション生成・適用確認
-- [ ] Seed script（`docs/database.md` 相当のダミーデータ、要件.md 38節: 組織1・管理者1・子供20・保護者15・活動5）
-- [ ] Index / Unique制約の実機確認
+- [x] SQLAlchemy モデル実装（organizations, admin_users, parents, children, parent_children, events, attendances, invitations, notifications, audit_logs）— `backend/app/models/`
+- [x] Alembic 初期マイグレーション生成・適用確認（`8b06229b4124_initial_schema.py`、`alembic upgrade head` で全10テーブル作成確認済み）
+- [x] Seed script（`backend/app/scripts/seed.py`）— 組織1・管理者1(admin@example.com/password123)・子供20・保護者15・parent_children紐付け20・活動5・出欠100件、実行確認済み
+- [x] Index / Unique制約の実機確認（psqlで `uq_attendances_event_child` 等のUNIQUE/CHECK制約を確認）
+- [x] 副産物の修正: `passlib` が新しい `bcrypt`(5.0.0)と非互換だったため、`bcrypt` ライブラリを直接使う方式に変更(`app/core/security.py`)
 
 ## Phase 3 — Admin Authentication
 
@@ -106,7 +109,6 @@
 
 ## 次にやること
 
-1. （任意）Docker Desktopを起動した状態で `docker compose up` の実機確認
-2. Phase 2着手: `backend/app/models/` にSQLAlchemyモデルを実装（`docs/database.md` の全テーブル）
-3. Alembic初期マイグレーション生成・適用
-4. Seedスクリプト作成
+1. （任意・別マシンでもOK）`C:` ドライブの空き容量を確保してから `docker compose up --build` のフルスタック起動確認
+2. Phase 3着手: `POST /api/v1/auth/login`、`GET /api/v1/me`、JWT認可ミドルウェア
+3. Admin frontend: ログイン画面（seedしたadmin@example.com / password123でログインできること）
