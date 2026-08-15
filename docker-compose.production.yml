@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: ${ENV_FILE:-.env.production}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lessonlink}
+      POSTGRES_USER: ${POSTGRES_USER:-lessonlink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lessonlink} -d ${POSTGRES_DB:-lessonlink}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.production
+    restart: unless-stopped
+    env_file: ${ENV_FILE:-.env.production}
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lessonlink}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lessonlink}
+      CORS_ORIGINS: '["https://${DOMAIN}"]'
+      LINE_MOCK_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile.production
+      args:
+        VITE_API_BASE_URL: /api/v1
+        VITE_PARENT_APP_URL: https://${DOMAIN}/parent
+    restart: unless-stopped
+
+  frontend-parent:
+    build:
+      context: ./frontend-parent
+      dockerfile: Dockerfile.production
+      args:
+        VITE_API_BASE_URL: /api/v1
+        VITE_LIFF_ID: ${LIFF_ID}
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN is required}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend-admin
+      - frontend-parent
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

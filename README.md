@@ -72,6 +72,12 @@ npm run dev
 
 詳細: [docs/product-requirements.md](docs/product-requirements.md) の 2.4節。
 
+## AWSへ本番デプロイ
+
+MVP向けの最小構成として、AWS Lightsail 1台へDocker Composeでデプロイできる。
+CaddyによるHTTPS、production build、DB migrationを含む手順は
+[docs/deployment-aws-lightsail.md](docs/deployment-aws-lightsail.md) を参照。
+
 ## 開発の進め方
 
 このプロジェクトはPhase単位（[TASKS.md](TASKS.md) 参照）で段階的に開発しています。MVPスコープに含まれない機能は [docs/backlog.md](docs/backlog.md) にまとめてあり、勝手に実装しません。

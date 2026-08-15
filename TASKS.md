@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 12（UX Polish）実装・自動検証完了（LINE実機検証は公開HTTPS準備待ち）**
+現在地: **Phase 12完了・AWS Lightsail本番デプロイ設定完了（サーバー作成・LINE実機検証待ち）**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -109,5 +109,6 @@
 
 ## 次にやること
 
-1. 公開HTTPS Endpointを準備し、LINE DevelopersのLIFF Endpoint URLを設定
-2. 実機でLIFFログイン・招待参加・出欠回答・通知を確認
+1. `docs/deployment-aws-lightsail.md` に従いLightsailとドメインを準備してデプロイ
+2. LINE DevelopersのLIFF Endpoint URLを公開URLへ変更
+3. 実機でLIFFログイン・招待参加・出欠回答・通知を確認
