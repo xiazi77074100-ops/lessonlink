@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 4（Organization）完了 → Phase 5（Child / Parent）へ**
+現在地: **Phase 5（Child / Parent）完了 → Phase 6（Event）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -57,10 +57,10 @@
 
 ## Phase 5 — Child / Parent
 
-- [ ] 子供 CRUD API
-- [ ] 保護者一覧・詳細 API
-- [ ] parent_children 紐付けAPI（生年月日照合ロジック含む、product-requirements.md 2.1）
-- [ ] Admin frontend: 子供一覧・登録画面
+- [x] 子供 CRUD API
+- [x] 保護者一覧・詳細 API
+- [x] parent_children 紐付けAPI（管理者操作。保護者本人の生年月日照合はPhase 9）
+- [x] Admin frontend: 子供一覧・登録画面
 
 ## Phase 6 — Event
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 5着手: 子供 CRUD API、保護者一覧・詳細 API、parent_children 紐付け API
-2. Admin frontend: 子供一覧・登録画面
+1. Phase 6着手: 活動 CRUD・キャンセル API
+2. Admin frontend: 活動一覧・作成・詳細画面
