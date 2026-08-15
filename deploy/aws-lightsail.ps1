@@ -175,6 +175,7 @@ if ($LASTEXITCODE -ne 0) { throw "git archive failed. Commit changes and retry."
 $sshTarget = "ubuntu@$staticIp"
 $sshArgs = @("-i", $keyPath, "-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=10")
 Write-Host "Waiting for SSH..."
+$ErrorActionPreference = "Continue"
 for ($attempt = 1; $attempt -le 30; $attempt++) {
     & ssh.exe @sshArgs $sshTarget "true" 2>$null
     if ($LASTEXITCODE -eq 0) { break }
