@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 3（Admin Authentication）完了 → Phase 4（Organization）へ**
+現在地: **Phase 4（Organization）完了 → Phase 5（Child / Parent）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -52,8 +52,8 @@
 
 ## Phase 4 — Organization
 
-- [ ] 組織作成・取得・更新 API
-- [ ] Admin frontend: 組織作成/設定画面
+- [x] 組織作成・取得・更新 API
+- [x] Admin frontend: 組織作成/設定画面
 
 ## Phase 5 — Child / Parent
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 4着手: 組織作成・取得・更新 API
-2. Admin frontend: 組織作成・設定画面
+1. Phase 5着手: 子供 CRUD API、保護者一覧・詳細 API、parent_children 紐付け API
+2. Admin frontend: 子供一覧・登録画面

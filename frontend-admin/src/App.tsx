@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { apiClient, clearAccessToken, getAccessToken, setAccessToken } from './lib/apiClient'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
+import { RegistrationPage } from './pages/RegistrationPage'
 import type { AdminUser } from './types/auth'
 
 const theme = createTheme({
@@ -16,6 +17,7 @@ const queryClient = new QueryClient()
 function App() {
   const [user, setUser] = useState<AdminUser | null>(null)
   const [isCheckingSession, setIsCheckingSession] = useState(true)
+  const [isRegistering, setIsRegistering] = useState(false)
 
   async function loadCurrentUser() {
     const { data } = await apiClient.get<AdminUser>('/me')
@@ -43,7 +45,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         {isCheckingSession ? (
           <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><CircularProgress /></Box>
-        ) : user ? <DashboardPage user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />}
+        ) : user ? <DashboardPage user={user} onLogout={handleLogout} /> : isRegistering ? (
+          <RegistrationPage onRegistered={handleLogin} onBack={() => setIsRegistering(false)} />
+        ) : <LoginPage onLogin={handleLogin} onRegister={() => setIsRegistering(true)} />}
       </QueryClientProvider>
     </ThemeProvider>
   )

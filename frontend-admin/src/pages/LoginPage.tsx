@@ -17,9 +17,10 @@ import type { LoginResponse } from '../types/auth'
 
 type LoginPageProps = {
   onLogin: (token: string) => Promise<void>
+  onRegister: () => void
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage({ onLogin, onRegister }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -57,6 +58,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <Button type="submit" variant="contained" size="large" fullWidth disabled={isSubmitting} sx={{ mt: 3, py: 1.25 }}>
               {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'ログイン'}
             </Button>
+            <Button fullWidth onClick={onRegister} sx={{ mt: 1 }}>組織を新規登録</Button>
           </Box>
         </Box>
       </Paper>
