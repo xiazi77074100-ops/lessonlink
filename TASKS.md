@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 11（Testing）完了 → Phase 12（UX Polish）へ（LINE実機検証は継続待ち）**
+現在地: **Phase 12（UX Polish）実装・自動検証完了（LINE実機検証は公開HTTPS準備待ち）**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -101,13 +101,13 @@
 
 ## Phase 12 — UX Polish
 
-- [ ] Loading / Empty / Error / Success / Disabled / Permission denied 状態確認
-- [ ] モバイルUI確認
-- [ ] 日本語UI最終チェック
+- [x] Loading / Empty / Error / Success / Disabled / Permission denied 状態確認
+- [x] モバイルUI対応（レスポンシブ実装・ビルド確認。LIFF実機表示は公開HTTPS準備後）
+- [x] 日本語UI最終チェック
 
 ---
 
 ## 次にやること
 
-1. Phase 12着手: 状態表示・モバイルUI・日本語UIの最終確認
-2. 公開HTTPS Endpoint準備後、実機でLIFFログイン・招待参加・出欠回答・通知を確認
+1. 公開HTTPS Endpointを準備し、LINE DevelopersのLIFF Endpoint URLを設定
+2. 実機でLIFFログイン・招待参加・出欠回答・通知を確認

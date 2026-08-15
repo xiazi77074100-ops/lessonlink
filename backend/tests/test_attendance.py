@@ -163,3 +163,26 @@ async def test_attendance_detail_hides_other_tenant_event() -> None:
         app.dependency_overrides.clear()
 
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_staff_cannot_update_attendance() -> None:
+    user = make_user()
+    user.role = "STAFF"
+    app.dependency_overrides[get_db] = lambda: FakeSession([user])
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/attendance",
+                headers=auth_header(user),
+                json={
+                    "event_id": str(uuid.uuid4()),
+                    "child_id": str(uuid.uuid4()),
+                    "status": "ATTENDING",
+                },
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN"

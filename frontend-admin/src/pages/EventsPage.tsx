@@ -58,6 +58,6 @@ export function EventsPage({ user }: { user: AdminUser }) {
       <TextField label="場所" value={form.location_name ?? ''} onChange={(event) => change('location_name', event.target.value)} /><TextField label="住所" value={form.location_address ?? ''} onChange={(event) => change('location_address', event.target.value)} />
       <TextField label="状態" select value={form.status} onChange={(event) => change('status', event.target.value)}><MenuItem value="DRAFT">下書き</MenuItem><MenuItem value="PUBLISHED">公開</MenuItem><MenuItem value="COMPLETED">完了</MenuItem></TextField>
     </DialogContent><DialogActions><Button onClick={() => setIsOpen(false)}>キャンセル</Button><Button type="submit" variant="contained">保存</Button></DialogActions></Box></Dialog>
-    <AttendanceDialog event={attendanceEvent} onClose={() => setAttendanceEvent(null)} />
+    <AttendanceDialog event={attendanceEvent} user={user} onClose={() => setAttendanceEvent(null)} />
   </Paper>
 }

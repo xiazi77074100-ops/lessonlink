@@ -28,6 +28,8 @@ function App() {
   const [birthDate, setBirthDate] = useState('')
   const [bindError, setBindError] = useState('')
   const [savedKey, setSavedKey] = useState('')
+  const [answeringKey, setAnsweringKey] = useState('')
+  const [answerError, setAnswerError] = useState('')
 
   async function loadPortal() {
     const [meResponse, eventsResponse] = await Promise.all([
@@ -79,16 +81,22 @@ function App() {
   }
 
   async function answer(eventId: string, childId: string, status: AttendanceStatus) {
-    await apiClient.post('/parent/attendance', { event_id: eventId, child_id: childId, status })
-    setSavedKey(`${eventId}:${childId}`)
-    const response = await apiClient.get<ParentEvent[]>('/parent/events')
-    setEvents(response.data)
+    const key = `${eventId}:${childId}`
+    setAnsweringKey(key)
+    setAnswerError('')
+    try {
+      await apiClient.post('/parent/attendance', { event_id: eventId, child_id: childId, status })
+      setSavedKey(key)
+      const response = await apiClient.get<ParentEvent[]>('/parent/events')
+      setEvents(response.data)
+    } catch { setAnswerError('回答を保存できませんでした。通信環境を確認してもう一度お試しください。') }
+    finally { setAnsweringKey('') }
   }
 
   if (phase === 'loading' || phase === 'error') return <main className="center"><h1>習い事管理くん</h1><p>{phase === 'loading' ? message : `エラー：${message}`}</p></main>
-  if (phase === 'binding') return <main><section className="card"><h1>お子様の確認</h1><p>{me?.display_name}さん、通っているお子様と生年月日を選択してください。</p>{bindError && <p className="error">{bindError}</p>}<label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{available.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button disabled={!selectedChild || !birthDate} onClick={bindChild}>確認して進む</button></section></main>
+  if (phase === 'binding') return <main><section className="card"><h1>お子様の確認</h1><p>{me?.display_name}さん、通っているお子様と生年月日を選択してください。</p>{bindError && <p className="error" role="alert">{bindError}</p>}{available.length === 0 ? <p className="error" role="alert">選択できるお子様がいません。教室の管理者にお問い合わせください。</p> : <><label>お子様<select value={selectedChild} onChange={(event) => setSelectedChild(event.target.value)}><option value="">選択してください</option>{available.map((child) => <option key={child.id} value={child.id}>{child.last_name} {child.first_name}{child.grade ? `（${child.grade}）` : ''}</option>)}</select></label><label>生年月日<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} /></label><button disabled={!selectedChild || !birthDate} onClick={bindChild}>確認して進む</button></>}</section></main>
 
-  return <main><header><h1>習い事管理くん</h1><p>{me?.display_name}さん</p></header>{events.length === 0 && <section className="card"><p>回答できる活動はありません。</p></section>}{events.map((lesson) => <section className="card" key={lesson.id}><p className="date">{new Date(lesson.start_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}</p><h2>{lesson.title}</h2>{lesson.location_name && <p>📍 {lesson.location_name}</p>}{lesson.children.map((child) => { const key = `${lesson.id}:${child.child_id}`; return <div className="answer" key={child.child_id}><strong>{child.child_name}</strong><div className="buttons"><button className={child.attendance_status === 'ATTENDING' ? 'active' : ''} onClick={() => answer(lesson.id, child.child_id, 'ATTENDING')}>参加</button><button className={child.attendance_status === 'ABSENT' ? 'active absent' : ''} onClick={() => answer(lesson.id, child.child_id, 'ABSENT')}>欠席</button><button className={child.attendance_status === 'LATE' ? 'active late' : ''} onClick={() => answer(lesson.id, child.child_id, 'LATE')}>遅刻</button></div>{savedKey === key && <p className="saved">回答しました。ありがとうございます。</p>}</div>})}</section>)}</main>
+  return <main><header><h1>習い事管理くん</h1><p>{me?.display_name}さん</p></header>{answerError && <p className="error" role="alert">{answerError}</p>}{events.length === 0 && <section className="card"><p>現在、回答できる活動はありません。</p></section>}{events.map((lesson) => <section className="card" key={lesson.id}><p className="date">{new Date(lesson.start_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}</p><h2>{lesson.title}</h2>{lesson.location_name && <p>📍 {lesson.location_name}</p>}{lesson.children.map((child) => { const key = `${lesson.id}:${child.child_id}`; const saving = answeringKey === key; return <div className="answer" key={child.child_id}><strong>{child.child_name}</strong><div className="buttons"><button disabled={saving} className={child.attendance_status === 'ATTENDING' ? 'active' : ''} onClick={() => answer(lesson.id, child.child_id, 'ATTENDING')}>参加</button><button disabled={saving} className={child.attendance_status === 'ABSENT' ? 'active absent' : ''} onClick={() => answer(lesson.id, child.child_id, 'ABSENT')}>欠席</button><button disabled={saving} className={child.attendance_status === 'LATE' ? 'active late' : ''} onClick={() => answer(lesson.id, child.child_id, 'LATE')}>遅刻</button></div>{saving && <p className="saved" aria-live="polite">保存中…</p>}{!saving && savedKey === key && <p className="saved" aria-live="polite">回答しました。ありがとうございます。</p>}</div>})}</section>)}</main>
 }
 
 export default App

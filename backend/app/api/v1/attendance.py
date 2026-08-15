@@ -28,6 +28,8 @@ async def upsert_attendance(
     current_user: CurrentAdminUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Attendance:
+    if current_user.role == "STAFF":
+        raise AppError("FORBIDDEN", "この操作を行う権限がありません。", status.HTTP_403_FORBIDDEN)
     event = await _get_event(body.event_id, current_user, db)
     if event.status == "CANCELLED":
         raise AppError(
