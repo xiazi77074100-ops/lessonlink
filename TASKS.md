@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 9（LINE）実装完了・実機検証は外部設定待ち**
+現在地: **Phase 9/10（LINE・通知）実装完了・実機検証は外部設定待ち → Phase 11へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -88,9 +88,9 @@
 
 ## Phase 10 — Notification
 
-- [ ] LineNotificationChannel 実装（Messaging API呼び出し）
-- [ ] 「未回答者に通知」API（parent_id単位で統合、product-requirements.md 2.5）
-- [ ] notifications テーブルへの送信ログ記録
+- [x] LineNotificationChannel 実装（Messaging API呼び出し、実機検証待ち）
+- [x] 「未回答者に通知」API（parent_id単位で統合、product-requirements.md 2.5）
+- [x] notifications テーブルへの送信ログ記録
 
 ## Phase 11 — Testing
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. LINE Developers設定完了後、実機でLIFFログイン・招待参加・出欠回答を確認
-2. 並行してPhase 10着手: LINE通知クライアント・未回答リマインド API
+1. LINE Developers設定完了後、実機でLIFFログイン・招待参加・出欠回答・通知を確認
+2. Phase 11着手: Unit/API/テナント分離/E2Eテストを拡充
