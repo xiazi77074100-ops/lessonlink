@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 5（Child / Parent）完了 → Phase 6（Event）へ**
+現在地: **Phase 6（Event）完了 → Phase 7（Attendance）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -64,8 +64,8 @@
 
 ## Phase 6 — Event
 
-- [ ] 活動 CRUD + キャンセル API
-- [ ] Admin frontend: 活動一覧・作成・詳細画面
+- [x] 活動 CRUD + キャンセル API
+- [x] Admin frontend: 活動一覧・作成・詳細/編集画面
 
 ## Phase 7 — Attendance
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 6着手: 活動 CRUD・キャンセル API
-2. Admin frontend: 活動一覧・作成・詳細画面
+1. Phase 7着手: 出欠 upsert・集計 API
+2. Admin frontend: ダッシュボード集計・活動別出欠画面

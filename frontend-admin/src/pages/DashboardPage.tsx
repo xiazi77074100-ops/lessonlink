@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiClient } from '../lib/apiClient'
 import { ChildrenPage } from './ChildrenPage'
+import { EventsPage } from './EventsPage'
 import type { AdminUser } from '../types/auth'
 import { organizationTypes, type Organization, type OrganizationForm } from '../types/organization'
 
@@ -14,7 +15,7 @@ export function DashboardPage({ user, onLogout }: DashboardPageProps) {
   const organization = organizations?.[0]
   const [form, setForm] = useState<OrganizationForm | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [section, setSection] = useState<'children' | 'organization'>('children')
+  const [section, setSection] = useState<'events' | 'children' | 'organization'>('events')
 
   useEffect(() => { if (organization) setForm({ name: organization.name, organization_type: organization.organization_type, address: organization.address, phone: organization.phone, email: organization.email }) }, [organization])
 
@@ -32,7 +33,8 @@ export function DashboardPage({ user, onLogout }: DashboardPageProps) {
     <>
       <AppBar position="static"><Toolbar><Typography variant="h6" sx={{ flexGrow: 1 }}>習い事管理くん</Typography><Button color="inherit" startIcon={<LogoutIcon />} onClick={onLogout}>ログアウト</Button></Toolbar></AppBar>
       <Container maxWidth="md"><Typography variant="h4" sx={{ mt: 4 }} gutterBottom>こんにちは、{user.display_name}さん</Typography>
-        <Box sx={{ display: 'flex', gap: 1, mt: 2 }}><Button variant={section === 'children' ? 'contained' : 'outlined'} onClick={() => setSection('children')}>子供管理</Button><Button variant={section === 'organization' ? 'contained' : 'outlined'} onClick={() => setSection('organization')}>組織設定</Button></Box>
+        <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}><Button variant={section === 'events' ? 'contained' : 'outlined'} onClick={() => setSection('events')}>活動管理</Button><Button variant={section === 'children' ? 'contained' : 'outlined'} onClick={() => setSection('children')}>子供管理</Button><Button variant={section === 'organization' ? 'contained' : 'outlined'} onClick={() => setSection('organization')}>組織設定</Button></Box>
+        {section === 'events' && <EventsPage user={user} />}
         {section === 'children' && <ChildrenPage user={user} />}
         {section === 'organization' && <Paper sx={{ mt: 3, p: { xs: 3, sm: 4 } }}><Typography variant="h5" gutterBottom>組織設定</Typography>
           {isLoading && <Typography>読み込み中…</Typography>}{isError && <Alert severity="error">組織情報を取得できませんでした。</Alert>}
