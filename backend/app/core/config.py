@@ -18,8 +18,11 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:5174"]
 
-    line_channel_id: str = ""
-    line_channel_secret: str = ""
+    line_login_channel_id: str = ""
+    line_login_channel_secret: str = ""
+    line_mock_enabled: bool = False
+    line_messaging_channel_id: str = ""
+    line_messaging_channel_secret: str = ""
     line_messaging_channel_access_token: str = ""
     liff_id: str = ""
 

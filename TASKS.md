@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 8（Invitation）完了 → Phase 9（LINE、外部設定待ち）へ**
+現在地: **Phase 9（LINE）実装完了・実機検証は外部設定待ち**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -82,9 +82,9 @@
 ## Phase 9 — LINE
 
 - [ ] ⚠️ ユーザー側でLINE Developers Provider / Messaging API Channel / LIFF App を作成し `.env` に設定（Claude Codeでは代行不可）
-- [ ] LIFF ID Token検証（サーバー側でline_user_id確定）
-- [ ] Parent frontend: LINEログイン → 子供選択 → 生年月日照合 → 紐付け
-- [ ] Parent frontend: 出欠回答画面（1画面、10秒以内）
+- [x] LIFF ID Token検証（公式verify API、サーバー側でline_user_id確定。実機検証待ち）
+- [x] Parent frontend: LINEログイン → 子供選択 → 生年月日照合 → 紐付け
+- [x] Parent frontend: 出欠回答画面（1画面、10秒以内）
 
 ## Phase 10 — Notification
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 9前提: LINE Developers Provider / Messaging API Channel / LIFF App を作成して `.env` に設定
-2. LIFF ID Token検証、保護者参加・子供本人確認、Parent frontend出欠画面
+1. LINE Developers設定完了後、実機でLIFFログイン・招待参加・出欠回答を確認
+2. 並行してPhase 10着手: LINE通知クライアント・未回答リマインド API

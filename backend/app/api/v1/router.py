@@ -6,6 +6,7 @@ from app.api.v1.children import router as children_router
 from app.api.v1.events import router as events_router
 from app.api.v1.invitations import router as invitations_router
 from app.api.v1.organizations import router as organizations_router
+from app.api.v1.parent_portal import router as parent_portal_router
 from app.api.v1.parents import router as parents_router
 
 router = APIRouter()
@@ -16,6 +17,7 @@ router.include_router(events_router)
 router.include_router(invitations_router)
 router.include_router(organizations_router)
 router.include_router(parents_router)
+router.include_router(parent_portal_router)
 
 
 @router.get("/health")

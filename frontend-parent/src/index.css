@@ -1,3 +1,21 @@
-body {
-  margin: 0;
-}
+:root { font-family: "Noto Sans JP", "Hiragino Sans", sans-serif; color: #203024; background: #f3f7f3; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+main { width: min(100% - 24px, 560px); margin: 0 auto; padding: 20px 0 48px; }
+.center { min-height: 80vh; display: grid; place-content: center; text-align: center; }
+header { padding: 8px 4px 16px; }
+header h1, header p { margin: 4px 0; }
+.card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 16px; box-shadow: 0 5px 20px #17351d12; }
+.card h1, .card h2 { margin: 4px 0 12px; }
+.date { color: #2e7d32; font-weight: 700; margin: 0; }
+label { display: grid; gap: 7px; margin: 18px 0; font-weight: 700; }
+select, input { width: 100%; min-height: 48px; border: 1px solid #b7c4b9; border-radius: 10px; padding: 10px; font-size: 16px; background: white; }
+button { border: 0; border-radius: 11px; min-height: 46px; padding: 10px 18px; font-size: 16px; font-weight: 700; color: #25632a; background: #e4f2e5; cursor: pointer; }
+button:disabled { opacity: .45; cursor: default; }
+.answer { border-top: 1px solid #e1e7e2; padding-top: 16px; margin-top: 16px; }
+.buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.buttons .active { color: white; background: #2e7d32; }
+.buttons .absent { background: #c33d3d; }
+.buttons .late { background: #d07a12; }
+.saved { color: #2e7d32; font-size: 14px; font-weight: 700; margin-bottom: 0; }
+.error { color: #b3261e; background: #ffebe9; border-radius: 8px; padding: 10px; }
