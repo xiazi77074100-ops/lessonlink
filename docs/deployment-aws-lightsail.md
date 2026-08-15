@@ -18,7 +18,7 @@ aws sts get-caller-identity
 powershell -ExecutionPolicy Bypass -File .\deploy\aws-lightsail.ps1
 ```
 
-スクリプトは東京リージョンで利用可能なLinux用1 GB以上の最安bundleを動的に選び、
+スクリプトは東京リージョンで利用可能なStatic IPv4対応Linux用1 GB以上の最安bundleを動的に選び、
 作成予定と月額を表示して `CREATE` の入力を求める。その後、instance、deploy用SSH key、
 Static IP、80/443 firewall、Docker、アプリのbuildと起動まで実行する。`-Domain` を省略すると、
 Static IPを使った `sslip.io` の一時ホスト名を利用する。

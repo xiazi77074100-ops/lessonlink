@@ -88,7 +88,10 @@ if ($BundleId) {
     $bundle = $bundles.bundles | Where-Object { $_.bundleId -eq $BundleId -and $_.isActive } | Select-Object -First 1
 } else {
     $bundle = $bundles.bundles |
-        Where-Object { $_.isActive -and $_.ramSizeInGb -ge 1 -and $_.supportedPlatforms -contains "LINUX_UNIX" } |
+        Where-Object {
+            $_.isActive -and $_.ramSizeInGb -ge 1 -and
+            $_.supportedPlatforms -contains "LINUX_UNIX" -and $_.bundleId -notmatch '_ipv6_'
+        } |
         Sort-Object price |
         Select-Object -First 1
 }
