@@ -28,10 +28,12 @@ cp frontend-parent/.env.example frontend-parent/.env
 docker compose up
 ```
 
-- Backend API: http://localhost:8000/api/v1/health
-- API Docs (Swagger): http://localhost:8000/docs
+- Backend API: http://localhost:8001/api/v1/health
+- API Docs (Swagger): http://localhost:8001/docs
 - Admin Dashboard: http://localhost:5173
 - Parent App: http://localhost:5174
+
+ホストのポート番号(5433, 8001など)は他ローカルプロジェクトとの衝突を避けるため既定値からずらしてある。自分の環境で衝突する/しない場合は `docker-compose.yml` と各 `.env` の `VITE_API_BASE_URL` を合わせて調整すること。
 
 ## ローカル開発（Dockerを使わない場合）
 

@@ -8,7 +8,7 @@
 
 現在地: **Phase 2（Database）完了 → Phase 3（Admin Authentication）へ**
 
-⚠️ **既知の環境問題（このマシン固有、コードの問題ではない）**: 開発機の `C:` ドライブの空き容量が約3MBしかない(2026-08-15時点)。Docker Desktop/WSL2の仮想ディスクがこの上にあるため、`docker compose build` がイメージレイヤーのcommit時に "read-only file system" エラーで失敗する(WSL2側のディスクが容量不足でread-onlyに落ちるため)。`C:` ドライブの空き容量を増やすまで `docker compose up --build` でのフルスタック起動確認はできない。DB自体の検証は `backend/.venv` + dockerのpostgresコンテナ単体で完了できたので、Phase 2の完了自体はブロックされていない。
+✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
 ## Phase 0 — 要件レビュー & ドキュメント
 
@@ -109,6 +109,5 @@
 
 ## 次にやること
 
-1. （任意・別マシンでもOK）`C:` ドライブの空き容量を確保してから `docker compose up --build` のフルスタック起動確認
-2. Phase 3着手: `POST /api/v1/auth/login`、`GET /api/v1/me`、JWT認可ミドルウェア
-3. Admin frontend: ログイン画面（seedしたadmin@example.com / password123でログインできること）
+1. Phase 3着手: `POST /api/v1/auth/login`、`GET /api/v1/me`、JWT認可ミドルウェア
+2. Admin frontend: ログイン画面（seedしたadmin@example.com / password123でログインできること）

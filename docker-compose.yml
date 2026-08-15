@@ -24,7 +24,10 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://lessonlink:lessonlink@postgres:5432/lessonlink
     ports:
-      - "8000:8000"
+      # host port 8000 is already used by another local project's backend
+      # container, so this maps to 8001 on the host; the container still
+      # listens on 8000 internally.
+      - "8001:8000"
     depends_on:
       postgres:
         condition: service_healthy
