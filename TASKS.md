@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 6（Event）完了 → Phase 7（Attendance）へ**
+現在地: **Phase 7（Attendance）完了 → Phase 8（Invitation）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -69,9 +69,9 @@
 
 ## Phase 7 — Attendance
 
-- [ ] 出欠 upsert API（冪等性、architecture.md 6節）
-- [ ] 集計API（参加/欠席/遅刻/未回答カウント）
-- [ ] Admin frontend: ダッシュボード集計表示
+- [x] 出欠 upsert API（冪等性、architecture.md 6節）
+- [x] 集計API（参加/欠席/遅刻/未回答カウント）
+- [x] Admin frontend: 活動別ダッシュボード集計表示
 
 ## Phase 8 — Invitation
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 7着手: 出欠 upsert・集計 API
-2. Admin frontend: ダッシュボード集計・活動別出欠画面
+1. Phase 8着手: 招待コード発行・検証 API、QRコード生成
+2. Admin frontend: 招待QR発行画面
