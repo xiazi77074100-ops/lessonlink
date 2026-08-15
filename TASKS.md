@@ -6,7 +6,7 @@
 
 ## 全体ステータス
 
-現在地: **Phase 7（Attendance）完了 → Phase 8（Invitation）へ**
+現在地: **Phase 8（Invitation）完了 → Phase 9（LINE、外部設定待ち）へ**
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
@@ -75,9 +75,9 @@
 
 ## Phase 8 — Invitation
 
-- [ ] 招待コード発行API + QRコード生成
-- [ ] 招待経由の保護者参加フロー（コード検証、期限/上限チェック）
-- [ ] Admin frontend: 招待QR発行画面
+- [x] 招待コード発行API + QRコード生成
+- [x] 招待コード検証・期限/上限チェック・原子的消費サービス（LINE本人確認との接続はPhase 9）
+- [x] Admin frontend: 招待QR発行画面
 
 ## Phase 9 — LINE
 
@@ -109,5 +109,5 @@
 
 ## 次にやること
 
-1. Phase 8着手: 招待コード発行・検証 API、QRコード生成
-2. Admin frontend: 招待QR発行画面
+1. Phase 9前提: LINE Developers Provider / Messaging API Channel / LIFF App を作成して `.env` に設定
+2. LIFF ID Token検証、保護者参加・子供本人確認、Parent frontend出欠画面
