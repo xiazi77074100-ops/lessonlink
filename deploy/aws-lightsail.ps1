@@ -136,7 +136,9 @@ if ($instance) {
         $keyMaterial = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($keyMaterial))
     }
     [IO.File]::WriteAllText($keyPath, $keyMaterial, [Text.UTF8Encoding]::new($false))
-    & icacls $keyPath /inheritance:r /grant:r "$($env:USERNAME):(R)" | Out-Null
+    $windowsPrincipal = "$($env:USERDOMAIN)\$($env:USERNAME)"
+    & icacls $keyPath /inheritance:r /grant:r "${windowsPrincipal}:(R)" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Could not secure the local deployment key ACL." }
 
     Invoke-AwsJson @(
         "lightsail", "create-instances", "--instance-names", $InstanceName,
