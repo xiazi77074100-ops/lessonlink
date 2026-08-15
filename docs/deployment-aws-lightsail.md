@@ -3,6 +3,39 @@
 MVP検証では、Lightsail の Linux インスタンス1台に Caddy、2つのフロントエンド、
 FastAPI、PostgreSQLを Docker Compose で配置する。CaddyがTLS証明書を自動取得・更新する。
 
+## PowerShell一括デプロイ（推奨）
+
+WindowsではAWS CLI v2をインストールし、最初の一度だけ認証する:
+
+```powershell
+aws configure
+aws sts get-caller-identity
+```
+
+`backend/.env` のLINE項目が設定済みで、すべての変更がcommit済みであることを確認して実行する:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deploy\aws-lightsail.ps1
+```
+
+スクリプトは東京リージョンで利用可能なLinux用1 GB以上の最安bundleを動的に選び、
+作成予定と月額を表示して `CREATE` の入力を求める。その後、instance、deploy用SSH key、
+Static IP、80/443 firewall、Docker、アプリのbuildと起動まで実行する。`-Domain` を省略すると、
+Static IPを使った `sslip.io` の一時ホスト名を利用する。
+
+独自ドメイン、AWS profile、bundleを明示する例:
+
+```powershell
+.\deploy\aws-lightsail.ps1 `
+  -AwsProfile default `
+  -Domain app.example.com `
+  -BundleId micro_3_0
+```
+
+秘密情報とSSH keyはGit管理外の `.deploy/` に置く。作成後の秘密情報は画面へ表示しない。
+AWS resource作成後に処理が失敗した場合、再実行で同名instanceを上書きせず停止するため、
+ログを確認して手動復旧または不要resourceの削除を行う。
+
 ## 料金と構成
 
 - リージョン: Asia Pacific (Tokyo)
