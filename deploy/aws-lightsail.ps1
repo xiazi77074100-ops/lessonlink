@@ -191,7 +191,7 @@ if ($LASTEXITCODE -ne 0) { throw "Could not create the remote directory." }
 & scp.exe @sshArgs $productionEnvPath "${sshTarget}:/tmp/lessonlink.env"
 if ($LASTEXITCODE -ne 0) { throw "Could not upload deployment files." }
 
-$remoteCommand = "tar -xzf /tmp/lessonlink.tar.gz -C /opt/lessonlink && mv /tmp/lessonlink.env /opt/lessonlink/.env.production && chmod +x /opt/lessonlink/deploy/remote-bootstrap.sh && /opt/lessonlink/deploy/remote-bootstrap.sh /opt/lessonlink"
+$remoteCommand = "tar -xzf /tmp/lessonlink.tar.gz -C /opt/lessonlink && mv /tmp/lessonlink.env /opt/lessonlink/.env.production && sed -i 's/\r$//' /opt/lessonlink/deploy/remote-bootstrap.sh && chmod +x /opt/lessonlink/deploy/remote-bootstrap.sh && /opt/lessonlink/deploy/remote-bootstrap.sh /opt/lessonlink"
 & ssh.exe @sshArgs $sshTarget $remoteCommand
 if ($LASTEXITCODE -ne 0) { throw "Remote deployment failed. Review the preceding logs." }
 
