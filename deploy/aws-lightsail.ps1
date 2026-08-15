@@ -11,6 +11,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+$env:AWS_CLI_FILE_ENCODING = "UTF-8"
+$env:PYTHONUTF8 = "1"
+$env:AWS_PAGER = ""
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $deployDir = Join-Path $repoRoot ".deploy"
