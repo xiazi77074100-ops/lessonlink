@@ -10,6 +10,10 @@
 
 ✅ **解決済み**: 開発機の `C:` ドライブが一時的に空き容量ほぼ0になっていた問題は、Windows Update キャッシュ削除・休止状態(hiberfil.sys)無効化・`docker system prune` で復旧(0 → 約7.4GB空き)。`docker compose up --build` でのフルスタック起動を確認済み(backend:8001, frontend-admin:5173, frontend-parent:5174, postgres:5433 — 5432/8000は別の既存プロジェクトのコンテナが使用中のためポートをずらした。詳細はdocker-compose.ymlのコメント参照)。
 
+⚠️ **本番デプロイの再実行が必要**: 家庭単位招待(このファイル内 Phase 13)以降のコミットは、まだ本番Lightsailインスタンスに反映されていない。直近の `deploy\aws-lightsail.ps1 -Resume` は、backend+2フロントエンドの同時dockerビルドでインスタンス(`micro_3_0`=1GB RAM)がメモリ枯渇しSSH/HTTPSが無応答になり失敗(その後`aws lightsail reboot-instance`で復旧、データ損失なし)。再デプロイ前に次のどちらかを行うこと: (a) SSH先でswapを追加する、(b) bundleを`small_3_0`(2GB)へ変更する。どちらもせず再実行すると同じ理由で再度失敗する可能性が高い。
+
+📝 **管理者UXの追加改善**（ユーザーフィードバック対応、Phase外の即時対応）: 保護者管理画面の新設（下記Phase 5参照）、活動作成フォームの改善（場所の入力補完・日時15分刻み・活動の複製作成）。
+
 ## Phase 0 — 要件レビュー & ドキュメント
 
 - [x] 要件.md をレビューし、矛盾点・リスクを洗い出す
@@ -61,11 +65,13 @@
 - [x] 保護者一覧・詳細 API
 - [x] parent_children 紐付けAPI（管理者操作。保護者本人の生年月日照合はPhase 9）
 - [x] Admin frontend: 子供一覧・登録画面
+- [x] Admin frontend: 保護者一覧画面（紐付け済みの子供を表示、誤紐付けの解除。product-requirements.md 2.1の最終箇条に対応。LINE経由の紐付けはPhase 9のバックエンド側で既に自動記録されており、この画面が唯一未実装だった可視化部分）
 
 ## Phase 6 — Event
 
 - [x] 活動 CRUD + キャンセル API
 - [x] Admin frontend: 活動一覧・作成・詳細/編集画面
+- [x] Admin frontend: 場所は過去に入力した値からの選択/新規自由入力（Autocomplete freeSolo）、開始/終了日時は15分刻み（`step=900`）、既存活動から複製して新規作成できるボタンを追加
 
 ## Phase 7 — Attendance
 

@@ -7,6 +7,7 @@ import type { AdminUser } from '../types/auth'
 import { organizationTypes, type Organization, type OrganizationForm } from '../types/organization'
 
 const ChildrenPage = lazy(() => import('./ChildrenPage').then((module) => ({ default: module.ChildrenPage })))
+const ParentsPage = lazy(() => import('./ParentsPage').then((module) => ({ default: module.ParentsPage })))
 const EventsPage = lazy(() => import('./EventsPage').then((module) => ({ default: module.EventsPage })))
 const InvitationsPage = lazy(() => import('./InvitationsPage').then((module) => ({ default: module.InvitationsPage })))
 
@@ -17,7 +18,7 @@ export function DashboardPage({ user, onLogout }: DashboardPageProps) {
   const organization = organizations?.[0]
   const [form, setForm] = useState<OrganizationForm | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [section, setSection] = useState<'events' | 'children' | 'invitations' | 'organization'>('events')
+  const [section, setSection] = useState<'events' | 'children' | 'parents' | 'invitations' | 'organization'>('events')
 
   useEffect(() => { if (organization) setForm({ name: organization.name, organization_type: organization.organization_type, address: organization.address, phone: organization.phone, email: organization.email }) }, [organization])
 
@@ -35,10 +36,11 @@ export function DashboardPage({ user, onLogout }: DashboardPageProps) {
     <>
       <AppBar position="static"><Toolbar><Typography variant="h6" sx={{ flexGrow: 1 }}>習い事管理くん</Typography><Button color="inherit" startIcon={<LogoutIcon />} onClick={onLogout}>ログアウト</Button></Toolbar></AppBar>
       <Container maxWidth="md"><Typography variant="h4" sx={{ mt: 4 }} gutterBottom>こんにちは、{user.display_name}さん</Typography>
-        <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}><Button variant={section === 'events' ? 'contained' : 'outlined'} onClick={() => setSection('events')}>活動管理</Button><Button variant={section === 'children' ? 'contained' : 'outlined'} onClick={() => setSection('children')}>子供管理</Button><Button variant={section === 'invitations' ? 'contained' : 'outlined'} onClick={() => setSection('invitations')}>招待管理</Button><Button variant={section === 'organization' ? 'contained' : 'outlined'} onClick={() => setSection('organization')}>組織設定</Button></Box>
+        <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}><Button variant={section === 'events' ? 'contained' : 'outlined'} onClick={() => setSection('events')}>活動管理</Button><Button variant={section === 'children' ? 'contained' : 'outlined'} onClick={() => setSection('children')}>子供管理</Button><Button variant={section === 'parents' ? 'contained' : 'outlined'} onClick={() => setSection('parents')}>保護者管理</Button><Button variant={section === 'invitations' ? 'contained' : 'outlined'} onClick={() => setSection('invitations')}>招待管理</Button><Button variant={section === 'organization' ? 'contained' : 'outlined'} onClick={() => setSection('organization')}>組織設定</Button></Box>
         <Suspense fallback={<Box sx={{ display: 'grid', placeItems: 'center', py: 8 }}><CircularProgress /></Box>}>
           {section === 'events' && <EventsPage user={user} />}
           {section === 'children' && <ChildrenPage user={user} />}
+          {section === 'parents' && <ParentsPage user={user} />}
           {section === 'invitations' && <InvitationsPage user={user} />}
         </Suspense>
         {section === 'organization' && <Paper sx={{ mt: 3, p: { xs: 3, sm: 4 } }}><Typography variant="h5" gutterBottom>組織設定</Typography>
